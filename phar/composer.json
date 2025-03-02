@@ -1,0 +1,12 @@
+{
+    "name": "root/html",
+    "autoload": {
+        "psr-4": {
+            "Phocker\\": "src/Phocker/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "require": {}
+}

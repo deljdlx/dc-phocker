@@ -46,7 +46,7 @@
                 <p>Phocker requires PHP 8 or higher to run.</p>
                 <p>Option <strong>phar.readonly</strong> must be set to 0 in php.ini</p>
                 <p>
-                    Optionnanl : a "data" folder must be created in the same directory as the phar file and must be writable
+                    Optionnal : a "data" folder must be created in the same directory as the phar file and must be writable
                 </p>
                 <p>
                     If the data folder is not present, the application will try to create it.

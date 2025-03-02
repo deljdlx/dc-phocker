@@ -13,9 +13,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
-      - "traefik.http.routers.drawio.rule=Host(\"${DOMAIN}\")"
-      - "traefik.http.routers.drawio.entrypoints=websecure"
-      - "traefik.http.routers.drawio.tls.certresolver=myresolver"
+      - "traefik.http.routers.phocker.rule=Host(\"${DOMAIN}\")"
+      - "traefik.http.routers.phocker.entrypoints=websecure"
+      - "traefik.http.routers.phocker.tls.certresolver=myresolver"
     networks:
       web:
 networks:

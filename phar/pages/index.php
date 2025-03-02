@@ -28,7 +28,12 @@
             "
     >
         <h1>Welcome to Phocker</h1>
-        <p>
+        <p
+            style="
+                max-width: 600px;
+                margin: 0 auto;
+                text-align: center;
+        ">
             Phocker is an experimental, all-in-one PHP website solution that you can run just by using a single .phar file. Perfect for quickly prototyping APIs or tinkering with small services, Phocker is designed for rapid experimentation and fun — but definitely not for production use — unless you like living on the edge!
         </p>
     </header>

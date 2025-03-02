@@ -1,2 +1,6 @@
 .vscode
 .env
+phar/data/*.db
+phar/*.phar
+
+app/data/*.db

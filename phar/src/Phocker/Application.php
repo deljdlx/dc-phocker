@@ -19,19 +19,22 @@ abstract class Application extends Phocker
     public readonly Router $router;
 
     protected ?SQLite3 $database;
-    protected $databaseName = 'data/phocker.db';
+    protected string $databaseName = 'data/phocker.db';
     protected string $databaseFile;
 
     protected string $assetsDir;
     protected string $pagesDir;
 
 
-    public function route_get_download()
+    public function route_get_download(): bool
     {
         if(!$this->isPhar()) {
             return false;
         }
 
+        if(!$this->getPharFile()) {
+            return false;
+        }
         header('Content-Type: application/octet-stream');
         header('Content-Disposition: attachment; filename="' . basename($this->getPharName()) . '"');
         readfile($this->getPharFile());
@@ -51,20 +54,25 @@ abstract class Application extends Phocker
         $this->initializeRoutes();
     }
 
-    public function run()
+    public function run(?string $method = null, ?string $uri = null): void
     {
         if (php_sapi_name() === 'cli') {
             $this->handleCli();
             return;
         }
 
+        if(!isset($method) || !isset($uri)) {
+            throw new \RuntimeException('Invalid request');
+        }
+
         $this->handleRequest(
-            $_SERVER['REQUEST_URI'],
-            $_SERVER['REQUEST_METHOD']
+            $method,
+            $uri,
         );
     }
 
-    public function handleCli(){
+    public function handleCli(): void
+    {
         $cmdOptions = getopt('c:iu', [
             'create-phar:',
             'info',
@@ -76,8 +84,12 @@ abstract class Application extends Phocker
 
             $destination = $cmdOptions['c'] ?? $cmdOptions['create-phar'];
 
-            if(!$destination) {
+            if($destination === false) {
                 $destination = getcwd() . '/phocker.phar';
+            }
+
+            if(!is_string($destination)) {
+                throw new \RuntimeException('Invalid destination');
             }
 
             $this->phockMe($destination);
@@ -99,27 +111,24 @@ abstract class Application extends Phocker
         }
     }
 
-    public function handleRequest(?string $uri = null, string $method = null)
+    public function handleRequest(string $method, string $uri): bool
     {
-        if (empty($uri)) {
-            $uri = $_SERVER['REQUEST_URI'] ?? '/';
-        }
-        if (empty($method)) {
-            $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
-        }
-
-        return $this->router->handleRequest($uri, $method);
+        return $this->router->handleRequest($method, $uri);
     }
 
-    protected function initializeRoutes()
+    protected function initializeRoutes(): void
     {
         $this->registerAssetsRoutes();
         $this->registerMagicRoutes();
     }
 
-    public function responseAsset($asset, $mimeType, $charset)
+    public function responseAsset(string $asset, string $mimeType, string $charset): bool
     {
         $buffer = file_get_contents($this->rootDir . '/assets/' . $asset);
+        if ($buffer === false) {
+            return false;
+        }
+
         $headers = [
             'Content-Type' => $mimeType . $charset
         ];
@@ -128,19 +137,21 @@ abstract class Application extends Phocker
     }
 
 
-    public function jsonResponse($data)
+    public function jsonResponse(mixed $data): bool
     {
+        if (!$data) {
+            return false;
+        }
+
         return $this->response(
-            json_encode($data),
+            (string) json_encode($data),
             [
                 'Content-Type' => 'application/json'
             ]
         );
-
-        return true;
     }
 
-    public function htmlResponse($data)
+    public function htmlResponse(string $data): bool
     {
         return $this->response(
             $data,
@@ -150,7 +161,12 @@ abstract class Application extends Phocker
         );
     }
 
-    public function response($data, $headers = [])
+    /**
+     * @param string $data
+     * @param array<string, string> $headers
+     * @return boolean
+     */
+    public function response(string $data, array $headers = []): bool
     {
         foreach ($headers as $name => $header) {
             header($name . ': ' . $header);
@@ -166,12 +182,13 @@ abstract class Application extends Phocker
         $this->end();
     }
 
-    private function saveDatabase()
+    private function saveDatabase(): void
     {
         $this->addToPhar('data/phocker.db', $this->databaseName);
     }
 
-    private function end() {
+    private function end(): void
+    {
         if(is_file($this->databaseFile)) {
             if($this->isPhar()) {
                 $this->saveDatabase();

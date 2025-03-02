@@ -9,42 +9,20 @@ if(Phar::running()) {
 
 $site = new Site(
     $bootstrapFile,
-    __DIR__
 );
-$site->run();
 
-return;
 
+$method = null;
+if(isset($_SERVER['REQUEST_METHOD'])) {
+    $method = filter_var($_SERVER['REQUEST_METHOD']);
+}
+
+$uri = null;
 if(isset($_SERVER['REQUEST_URI'])) {
-    $site->handleRequest(
-        $_SERVER['REQUEST_URI'],
-        $_SERVER['REQUEST_METHOD']
-    );
+    $uri = filter_var($_SERVER['REQUEST_URI'], FILTER_SANITIZE_URL);
 }
 
-// ===========================================================
-
-$cmdOptions = getopt('ciu', [
-    'create-phar',
-    'info',
-    'init',
-    'unphar'
-]);
-
-
-if (isset($cmdOptions['c']) || isset($cmdOptions['create-phar'])) {
-    $site->phockMe();
-}
-elseif(isset($cmdOptions['i']) || isset($cmdOptions['info'])) {
-    $site->getInformations();
-    echo PHP_EOL;
-}
-elseif(isset($cmdOptions['u']) || isset($cmdOptions['unphar'])) {
-    $currrentPath = getcwd();
-    $site->unphockMe($currrentPath . '/phar');
-}
-return;
-
-// ===========================================================
-
-
+$site->run(
+     (string) $method,
+    (string) $uri
+);

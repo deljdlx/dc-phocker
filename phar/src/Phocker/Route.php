@@ -1,17 +1,38 @@
 <?php
 namespace Phocker;
 
-class Route implements \ArrayAccess {
-    public $methods;
-    public $uri;
-    public $callback;
-    public $name;
 
+
+/**
+ * @implements \ArrayAccess<string, mixed>
+ */
+class Route implements \ArrayAccess {
+
+    /**
+     * @var string[]
+     */
+    public array $methods;
+    public string $uri;
+
+
+    /**
+     * @var callable
+     */
+    public mixed $callback;
+    public string $name;
+
+
+    /**
+     * @param string[] $methods
+     * @param string $uri
+     * @param callable $callback
+     * @param string $name
+     */
     public function __construct(array $methods, string $uri, callable $callback, string $name = null) {
         $this->methods = $methods;
         $this->uri = $uri;
         $this->callback = $callback;
-        $this->name = $name;
+        $this->name = $name ?? '';
     }
 
     public function offsetExists($offset): bool

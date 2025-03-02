@@ -3,11 +3,18 @@ namespace Phocker\Traits;
 
 Trait HasMagicRoutes
 {
-    public function registerMagicRoutes()
+    public function registerMagicRoutes(): void
     {
         $this->router->any(
             '.*',
             function() {
+                if(!isset($_SERVER['REQUEST_URI']) || !isset($_SERVER['REQUEST_METHOD'])) {
+                    throw new \RuntimeException('Invalid request');
+                }
+                if(!is_string($_SERVER['REQUEST_URI']) || !is_string($_SERVER['REQUEST_METHOD'])) {
+                    throw new \RuntimeException('Invalid request');
+                }
+                
                 $uri = $_SERVER['REQUEST_URI'];
                 $method = $_SERVER['REQUEST_METHOD'];
                 $handled = $this->handleApiRoute($method, $uri);
@@ -22,7 +29,7 @@ Trait HasMagicRoutes
     }
 
 
-    protected function displayPage(string $page)
+    protected function displayPage(string $page): bool
     {
         $filepath = $this->pagesDir . '/' . $page . '.php';
 
@@ -31,11 +38,16 @@ Trait HasMagicRoutes
             require_once $filepath;
             $content = ob_get_clean();
             ob_end_clean();
+            if(!$content) {
+                return false;
+            }
             return $this->htmlResponse($content);
         }
+
+        return false;
     }
 
-    protected function handlePageRoute($uri)
+    protected function handlePageRoute(string $uri): bool
     {
         $parts = explode('?', $uri);
         $uriParts = explode('/', $parts[0]);
@@ -44,6 +56,10 @@ Trait HasMagicRoutes
 
         // security check if file is in pages directory
         $realpath = realpath($filepath);
+        if(!$realpath) {
+            return false;
+        }
+
         if(strpos($realpath, $this->pagesDir) !== 0) {
             return false;
         }
@@ -53,11 +69,15 @@ Trait HasMagicRoutes
             require_once $filepath;
             $content = ob_get_clean();
             ob_end_clean();
+            if(!$content) {
+                return false;
+            }
             return $this->htmlResponse($content);
         }
+        return false;
     }
 
-    protected function handleApiRoute($method, $uri)
+    protected function handleApiRoute(string $method, string $uri): bool
     {
         $parts = explode('?', $uri);
         $uriParts = explode('/', $parts[0]);

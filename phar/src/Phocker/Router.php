@@ -2,41 +2,62 @@
 namespace Phocker;
 
 class Router {
+    /**
+     * @var Route[]
+     */
     private $routes = [];
 
+    /**
+     * @return Route[]
+     */
     public function getRoutes(): array {
         return $this->routes;
     }
 
-    public function get(string $uri, callable $callback, string $name = null) {
+    public function get(string $uri, callable $callback, string $name = null): void
+    {
         $this->addRoute(['GET'], $uri, $callback, $name);
     }
 
-    public function post(string $uri, callable $callback, string $name = null) {
+    public function post(string $uri, callable $callback, string $name = null): void
+    {
         $this->addRoute(['POST'], $uri, $callback, $name);
     }
 
-    public function put(string $uri, callable $callback, string $name = null) {
+    public function put(string $uri, callable $callback, string $name = null): void
+    {
         $this->addRoute(['PUT'], $uri, $callback, $name);
     }
 
-    public function delete(string $uri, callable $callback, string $name = null) {
+    public function delete(string $uri, callable $callback, string $name = null): void
+    {
         $this->addRoute(['DELETE'], $uri, $callback, $name);
     }
 
-    public function patch(string $uri, callable $callback, string $name = null) {
+    public function patch(string $uri, callable $callback, string $name = null): void
+    {
         $this->addRoute(['PATCH'], $uri, $callback, $name);
     }
 
-    public function options(string $uri, callable $callback, string $name = null) {
+    public function options(string $uri, callable $callback, string $name = null): void
+    {
         $this->addRoute(['OPTIONS'], $uri, $callback, $name);
     }
 
-    public function any(string $uri, callable $callback, string $name = null) {
+    public function any(string $uri, callable $callback, string $name = null): void
+    {
         $this->addRoute(['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'], $uri, $callback, $name);
     }
 
-    public function addRoute(array $methods, string $uri, callable $callback, string $name = null) {
+    /**
+     * @param string[] $methods
+     * @param string $uri
+     * @param callable $callback
+     * @param string|null $name
+     * @return void
+     */
+    public function addRoute(array $methods, string $uri, callable $callback, string $name = null): void
+    {
         $route = new Route($methods, $uri, $callback, $name);
         if ($name) {
             $this->routes[$name] = $route;
@@ -45,7 +66,8 @@ class Router {
         }
     }
 
-    public function handleRequest($requestUri, $requestMethod) {
+    public function handleRequest(string $requestMethod, string $requestUri): bool
+    {
         foreach ($this->routes as $route) {
             if (in_array($requestMethod, $route->methods)) {
                 // Remplace tous les {param} par des groupes capturants

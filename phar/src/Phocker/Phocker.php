@@ -13,13 +13,17 @@ abstract class Phocker
     protected string $currentDir;
     protected string $rootDir;
 
-    abstract public function initialize();
+    abstract public function initialize(): void;
 
     public function __construct(string $bootstrapFile)
     {
+        $currentDir = getcwd();
+        if($currentDir === false) {
+            throw new \RuntimeException('Cannot get current directory');
+        }
         $this->bootstrapFile = $bootstrapFile;
         $this->pharName = basename($bootstrapFile);
-        $this->currentDir = getcwd();
+        $this->currentDir = $currentDir;
         $this->rootDir = dirname($bootstrapFile);
 
         if($this->isPhar()) {
@@ -60,7 +64,7 @@ abstract class Phocker
         return $files;
     }
 
-    public function getInformations()
+    public function getInformations(): void
     {
         echo "============================================" . PHP_EOL;
         echo 'Phar name: ' . $this->getPharName() . PHP_EOL;
@@ -80,14 +84,14 @@ abstract class Phocker
     }
 
 
-    protected function addToPhar(string $file, string $alias = null)
+    protected function addToPhar(string $file, string $alias = null): void
     {
         $phar = new Phar($this->getPharName());
         $phar->addFile($file, $alias);
         $phar->stopBuffering();
     }
 
-    public function phockMe(string $destination = null)
+    public function phockMe(string $destination = null): void
     {
         if (!$destination) {
             $destination = $this->getPharName();
@@ -102,7 +106,7 @@ abstract class Phocker
         return;
     }
 
-    public function unphockMe(string $destination)
+    public function unphockMe(string $destination): void
     {
         $phar = new Phar($this->getPharName());
         $phar->extractTo($destination);

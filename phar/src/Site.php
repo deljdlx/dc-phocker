@@ -3,17 +3,30 @@ use Phocker\Application;
 
 class Site extends Application
 {
-    public function route_get_api_notes()
+    public function route_get_api_notes(): bool
     {
         return $this->jsonResponse(
             $this->getNotes()
         );
     }
 
-    public function route_post_api_notes()
+    public function route_post_api_notes(): bool
     {
         $input = file_get_contents('php://input');
+        if(!$input) {
+            return $this->jsonResponse([
+                'response' => 'error',
+                'message' => 'No input provided'
+            ]);
+        }
         $content = json_decode($input, true);
+
+        if(!is_array($content) || !is_string($content['content'])) {
+            return $this->jsonResponse([
+                'response' => 'error',
+                'message' => 'Invalid input'
+            ]);
+        }
         $newNote = $this->createNote($content['content']);
 
         $response = [
@@ -23,7 +36,7 @@ class Site extends Application
         return $this->jsonResponse($response);
     }
 
-    protected function initializeRoutes()
+    protected function initializeRoutes(): void
     {
         parent::initializeRoutes();
 
@@ -35,7 +48,7 @@ class Site extends Application
         );
     }
 
-    public function handleRequest(?string $uri = null, string $method = null)
+    public function handleRequest(string $uri, string $method): bool
     {
         $handled = parent::handleRequest($uri, $method);
         if ($handled) {
@@ -46,24 +59,46 @@ class Site extends Application
         return $this->displayPage('404');
     }
 
-    public function initialize()
+    public function initialize(): void
     {
         $this->createDatabase();
     }
 
-    public function createNote($content)
+    /**
+     * @param string $content
+     * @return array<string, string>
+     */
+    public function createNote(string $content): array
     {
         $this->database = $this->getDatabase();
         $stmt = $this->database->prepare('INSERT INTO notes (content) VALUES (:content)');
+
+        if(!$stmt) {
+            return [];
+        }
+
         $stmt->bindValue(':content', $content, SQLITE3_TEXT);
         $stmt->execute();
 
-        $newNote = $this->database->query('SELECT * FROM notes ORDER BY id DESC LIMIT 1')->fetchArray();
+        $result = $this->database->query('SELECT * FROM notes ORDER BY id DESC LIMIT 1');
+        if(!$result) {
+            return [];
+        }
+
+        $newNote = $result->fetchArray();
+        if(!$newNote) {
+            return [];
+        }
 
         return $newNote;
     }
 
-    public function getNotes(int $start = 0, int $limit = 10)
+    /**
+     * @param integer $start
+     * @param integer $limit
+     * @return array<array<string, string>>
+     */
+    public function getNotes(int $start = 0, int $limit = 10): array
     {
         $this->database = $this->getDatabase();
         $results = $this->database->query("
@@ -71,6 +106,11 @@ class Site extends Application
             ORDER BY id DESC
             LIMIT {$start}, {$limit}
         ");
+
+        if(!$results) {
+            return [];
+        }
+
         $logs = [];
         while ($row = $results->fetchArray(SQLITE3_ASSOC)) {
             $logs[] = $row;
@@ -79,7 +119,7 @@ class Site extends Application
         return $logs;
     }
 
-    protected function getDatabase()
+    protected function getDatabase(): SQLite3
     {
         if($this->isPhar()) {
             $this->databaseFile = $this->currentDir . '/' . $this->databaseName;
@@ -98,7 +138,7 @@ class Site extends Application
         return $this->database;
     }
 
-    protected function createDatabase()
+    protected function createDatabase(): void
     {
         if(!is_dir(dirname($this->databaseFile))) {
             mkdir(dirname($this->databaseFile), 0754, true);

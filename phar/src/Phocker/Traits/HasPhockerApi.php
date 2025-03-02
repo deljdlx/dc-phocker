@@ -6,7 +6,7 @@ use Phar;
 Trait HasPhockerApi
 {
 
-    public function route_get_api_phocker_routes()
+    public function route_get_api_phocker_routes(): bool
     {
         $routes = $this->router->getRoutes();
         $data = [];
@@ -22,7 +22,7 @@ Trait HasPhockerApi
         return $this->jsonResponse($data);
     }
 
-    public function route_get_api_phocker_version()
+    public function route_get_api_phocker_version(): bool
     {
         $data = [
             'version' => '1.0.0',
@@ -39,7 +39,7 @@ Trait HasPhockerApi
         return $this->jsonResponse($data);
     }
 
-    public function route_get_api_phocker_files()
+    public function route_get_api_phocker_files(): bool
     {
         $files = $this->getFiles();
         $data = [];

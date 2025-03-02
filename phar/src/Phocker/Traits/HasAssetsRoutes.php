@@ -3,7 +3,7 @@ namespace Phocker\Traits;
 
 Trait HasAssetsRoutes
 {
-    protected function registerAssetsRoutes()
+    protected function registerAssetsRoutes(): void
     {
         $this->router->get(
             '/assets/{type}/{file}',
@@ -13,9 +13,10 @@ Trait HasAssetsRoutes
         );
     }
 
-    public function getAsset(string $asset) {
+    public function getAsset(string $asset): bool
+    {
 
-        $mimeType = null;
+        $mimeType = '';
         $charset = '';
         if(strpos($asset, 'css') !== false) {
             $mimeType = 'text/css';
@@ -29,7 +30,13 @@ Trait HasAssetsRoutes
 
         if(!$mimeType) {
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mimeType = finfo_file($finfo, $this->assetsDir . '/' . $asset);
+            if($finfo) {
+                $detectedMimeType = finfo_file($finfo, $this->assetsDir . '/' . $asset);
+                if($detectedMimeType) {
+                    $mimeType = $detectedMimeType;
+                }
+                finfo_close($finfo);
+            }
         }
 
         return $this->responseAsset($asset, $mimeType, $charset);

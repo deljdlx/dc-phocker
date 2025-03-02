@@ -31,7 +31,7 @@ Trait HasPhockerApi
         ];
 
         if($this->isPhar()) {
-            $phar = new Phar($this->rootDir . '/' . $this->getPharName());
+            $phar = new Phar($this->rootDir);
             $data['signature'] = $phar->getSignature();
         }
 

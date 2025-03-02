@@ -4,6 +4,10 @@ namespace Phocker;
 class Router {
     private $routes = [];
 
+    public function getRoutes(): array {
+        return $this->routes;
+    }
+
     public function get(string $uri, callable $callback, string $name = null) {
         $this->addRoute(['GET'], $uri, $callback, $name);
     }
@@ -33,32 +37,25 @@ class Router {
     }
 
     public function addRoute(array $methods, string $uri, callable $callback, string $name = null) {
-        if($name) {
-            $this->routes[$name] = [
-                'methods' => $methods,
-                'uri' => $uri,
-                'callback' => $callback
-            ];
-            return;
+        $route = new Route($methods, $uri, $callback, $name);
+        if ($name) {
+            $this->routes[$name] = $route;
+        } else {
+            $this->routes[] = $route;
         }
-        $this->routes[] = [
-            'methods' => $methods,
-            'uri' => $uri,
-            'callback' => $callback
-        ];
     }
 
     public function handleRequest($requestUri, $requestMethod) {
         foreach ($this->routes as $route) {
-            if (in_array($requestMethod, $route['methods'])) {
-                // Remplace tous les {param} par des groupes capturant
-                $pattern = preg_replace('/{(\w+)}/', '(?P<$1>[^/]+)', $route['uri']);
+            if (in_array($requestMethod, $route->methods)) {
+                // Remplace tous les {param} par des groupes capturants
+                $pattern = preg_replace('/{(\w+)}/', '(?P<$1>[^/]+)', $route->uri);
                 $pattern = '#^' . $pattern . '$#'; // Assure-toi que l'URL correspond parfaitement
 
                 if (preg_match($pattern, $requestUri, $matches)) {
                     // On récupère les paramètres capturés
                     $parameters = array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
-                    $result = call_user_func_array($route['callback'], $parameters);
+                    $result = call_user_func_array($route->callback, $parameters);
                     if ($result) {
                         return true;
                     }
@@ -67,5 +64,4 @@ class Router {
         }
         return false;
     }
-
 }

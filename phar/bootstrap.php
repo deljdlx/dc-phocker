@@ -2,7 +2,15 @@
 include __DIR__ . '/vendor/autoload.php';
 include __DIR__ . '/src/Site.php';
 
-$site = new Site(__DIR__, 'phocker.phar');
+$bootstrapFile = __FILE__;
+if(Phar::running()) {
+    $bootstrapFile = Phar::running();
+}
+
+$site = new Site(
+    $bootstrapFile,
+    __DIR__
+);
 $site->run();
 
 return;

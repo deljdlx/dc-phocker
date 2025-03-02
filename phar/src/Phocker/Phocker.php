@@ -8,21 +8,35 @@ use SQLite3;
 
 abstract class Phocker
 {
+    protected string $bootstrapFile;
     protected string $pharName;
     protected string $currentDir;
-
     protected string $rootDir;
-    protected string $pharRootDir;
-
-    public function __construct(string $root, string $pharName)
-    {
-        $this->pharName = $pharName;
-        $this->currentDir = getcwd();
-        $this->rootDir = $root;
-        $this->pharRootDir = $this->rootDir;
-    }
 
     abstract public function initialize();
+
+    public function __construct(string $bootstrapFile)
+    {
+        $this->bootstrapFile = $bootstrapFile;
+        $this->pharName = basename($bootstrapFile);
+        $this->currentDir = getcwd();
+        $this->rootDir = dirname($bootstrapFile);
+
+        if($this->isPhar()) {
+            $this->rootDir = $bootstrapFile;
+        }
+    }
+
+    public function getPharFile(): string|false
+    {
+        if(!$this->isPhar()) {
+            return false;
+        }
+
+        $file = $this->rootDir;
+        $file = str_replace('phar://', '', $file);
+        return $file;
+    }
 
     public function isPhar(): bool
     {
@@ -48,10 +62,15 @@ abstract class Phocker
 
     public function getInformations()
     {
-        // echo "============================================" . PHP_EOL;
-        // echo 'Phar name: ' . $this->getPharName() . PHP_EOL;
-        // $this->listFiles();
-        // echo "============================================" . PHP_EOL;
+        echo "============================================" . PHP_EOL;
+        echo 'Phar name: ' . $this->getPharName() . PHP_EOL;
+        $files = $this->getFiles();
+        echo 'Files: ' . count($files) . PHP_EOL;
+        foreach ($files as $file) {
+            echo "\t" . $file->getFilename() . PHP_EOL;
+        }
+
+        echo "============================================" . PHP_EOL;
     }
 
 

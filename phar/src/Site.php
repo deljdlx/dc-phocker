@@ -112,13 +112,12 @@ class Site extends Application
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )');
 
-        for ($i = 0; $i < 5; $i++) {
-            $this->database->exec("
-                INSERT INTO notes (content)
-                VALUES (
-                    '". date('Y-m-d H:i:s') . " - Test note {$i}'
-                )
-            ");
-        }
+        $this->database->exec("
+            INSERT INTO notes (content)
+            VALUES (
+                'Welcome to Phocker !'
+            )
+        ");
+
     }
 }
